@@ -2,27 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Portal</title>
+    <title>Enterprise Portal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav>
-        <div class="nav-logo">HUB</div>
-        <button class="btn-primary" onclick="openLogin()">LOGIN</button>
+        <div class="logo">Core.System</div>
+        <button class="btn btn-blue" onclick="openLogin()">Sign In</button>
     </nav>
 
-    <div style="text-align:center; margin-top: 15vh;">
-        <h1 style="font-size: 3.5rem; margin-bottom: 10px;">Welcome back.</h1>
-        <p style="color: var(--text-dim);">The central hub for all community resources.</p>
+    <div class="container" style="text-align: center; padding-top: 100px;">
+        <h1 style="font-size: 4rem; margin: 0;">Secure Gateway.</h1>
+        <p style="font-size: 1.2rem; max-width: 600px; margin: 20px auto;">A professional-grade environment for departmental operations and community resource management.</p>
     </div>
 
-    <div id="loginModal" class="modal-overlay" style="display:none;">
-        <div class="glass login-card">
-            <h2 style="margin-top:0;">Sign In</h2>
-            <input type="text" id="user" placeholder="Email Address">
+    <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; align-items:center; justify-content:center;">
+        <div class="card" style="width: 400px; padding: 40px; background: #0a0a0a;">
+            <h2 style="margin-top:0;">Identity Check</h2>
+            <p>Please enter your credentials to proceed.</p>
+            <input type="email" id="user" placeholder="Email Address" style="margin-bottom: 15px;">
             <input type="password" id="pass" placeholder="Password">
-            <button class="btn-primary" style="width:100%; margin-top:20px;" onclick="handleLogin()">Continue</button>
-            <p onclick="closeLogin()" style="font-size:0.8rem; color:var(--text-dim); cursor:pointer; margin-top:15px;">Go back</p>
+            <button class="btn btn-blue" style="width:100%; margin-top:25px;" onclick="handleLogin()">Authorize Access</button>
+            <button class="btn" style="background:transparent; color:var(--text-secondary); width:100%; margin-top:10px;" onclick="closeLogin()">Cancel</button>
         </div>
     </div>
 
@@ -53,7 +54,7 @@
                 const res = await signInWithEmailAndPassword(auth, email, pass);
                 localStorage.setItem('userEmail', res.user.email);
                 window.location.href = 'dashboard.html';
-            } catch (e) { alert("Invalid login."); }
+            } catch (e) { alert("Access Denied: Check Credentials"); }
         };
     </script>
 </body>
