@@ -3,46 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
+    <title>Command Dashboard</title>
 </head>
 <body onload="checkAuth()">
     
-    <div id="prefScreen" style="padding: 50px 5%;">
-        <h1 style="text-align:center;">Select Workspace</h1>
-        <div class="pref-grid">
-            <div class="glass role-card" onclick="selectRole('Dept')"><h3>Department</h3></div>
-            <div class="glass role-card" onclick="selectRole('Biz')"><h3>Business</h3></div>
-            <div class="glass role-card" onclick="selectRole('Server')"><h3>RP Server</h3></div>
+    <div id="prefScreen" class="container" style="text-align: center; margin-top: 10vh;">
+        <h1>Select Environment</h1>
+        <p>Choose your workspace to load localized resources.</p>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 40px;">
+            <div class="card" style="padding: 40px; cursor: pointer;" onclick="selectRole('Department')">
+                <h3 style="color: var(--accent-blue);">DEPARTMENT</h3>
+                <p>Internal Operations</p>
+            </div>
+            <div class="card" style="padding: 40px; cursor: pointer;" onclick="selectRole('Business')">
+                <h3>BUSINESS</h3>
+                <p>Commerce & Assets</p>
+            </div>
+            <div class="card" style="padding: 40px; cursor: pointer;" onclick="selectRole('RP Server')">
+                <h3>SERVER</h3>
+                <p>Public Management</p>
+            </div>
         </div>
     </div>
 
     <div id="mainUI" style="display:none;">
         <nav>
-            <div id="userLabel" style="font-size: 0.8rem; color: var(--text-dim);"></div>
-            <button class="btn-outline" onclick="location.href='index.html'">Sign Out</button>
+            <div class="logo">System.Manager</div>
+            <div style="display:flex; align-items:center; gap:20px;">
+                <span id="userLabel" style="font-size:0.8rem; color:var(--text-secondary);"></span>
+                <button class="btn" style="background:#1a1a1a; border:1px solid #333; color:white;" onclick="location.href='index.html'">Sign Out</button>
+            </div>
         </nav>
 
-        <div class="dashboard-container">
-            <div class="glass chat-section">
-                <div style="padding: 15px; border-bottom: 1px solid var(--glass-border); font-weight:bold;">Community Chat</div>
-                <div id="chatMessages" class="message-area"></div>
-                <div style="padding:15px;">
-                    <input type="text" id="msgIn" placeholder="Type a message..." style="margin:0;">
+        <div class="container grid-main">
+            <div class="card" style="height: 70vh; display: flex; flex-direction: column;">
+                <div style="padding: 20px; border-bottom: 1px solid var(--border); font-weight:600;">Communications</div>
+                <div id="chatMessages" style="flex:1; overflow-y:auto; padding:20px; font-size:0.9rem;"></div>
+                <div style="padding: 20px; border-top: 1px solid var(--border);">
+                    <input type="text" id="msgIn" placeholder="Broadcast message...">
                 </div>
             </div>
 
-            <div class="glass" style="padding:30px;">
-                <div id="modTools" style="display:none; margin-bottom:30px; border: 1px solid #ef4444; padding:20px; border-radius:12px;">
-                    <h4 style="color:#ef4444; margin-top:0;">Moderator Actions</h4>
-                    <input type="text" id="target" placeholder="Search User Email..." style="width:250px;">
-                    <button class="btn-primary" style="background:#ef4444;" onclick="alert('Action Sent')">Suspend User</button>
+            <div class="card" style="padding: 40px; position: relative;">
+                <div id="modTools" style="display:none; margin-bottom:40px; border:1px solid var(--accent-red); padding:25px; border-radius:12px; background: rgba(127, 29, 29, 0.05);">
+                    <h3 style="color: #ef4444; margin-top:0;">Moderator Control Panel</h3>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="target" placeholder="Enter target user email..." style="max-width:300px;">
+                        <button class="btn btn-red" onclick="alert('Action logged to secure database.')">Apply Sanction</button>
+                    </div>
                 </div>
 
-                <h2 id="roleTitle">Resources</h2>
-                <p id="roleDesc" style="color:var(--text-dim);">Select a module to begin.</p>
-                
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:20px;">
-                    <div class="glass" style="padding:20px;">Main Resource Tab</div>
-                    <div class="glass" style="padding:20px;">Secondary Assets</div>
+                <h1 id="roleTitle" style="margin-top:0;">Loading...</h1>
+                <p id="roleDesc">Workspace initialized. Accessing secure data modules...</p>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:30px;">
+                    <div class="card" style="padding:25px;">
+                        <h4>Primary Assets</h4>
+                        <p style="font-size:0.85rem;">Operational files and documentation linked to this profile.</p>
+                    </div>
+                    <div class="card" style="padding:25px;">
+                        <h4>External Logs</h4>
+                        <p style="font-size:0.85rem;">Third-party integrations and activity tracking.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -64,7 +86,7 @@
                 document.getElementById('modTools').style.display = 'block';
             }
 
-            document.getElementById('roleTitle').innerText = role + " Workspace";
+            document.getElementById('roleTitle').innerText = role.toUpperCase() + " ENVIRONMENT";
         }
     </script>
 </body>
