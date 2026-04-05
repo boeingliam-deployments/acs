@@ -79,3 +79,13 @@ nav {
 .btn { padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; transition: 0.3s; }
 .btn-blue { background: var(--accent-blue); color: white; }
 .btn-blue:hover { box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+
+@media (max-width: 600px) {
+    .logo-container div {
+        font-size: 0.8rem !important;
+    }
+    .acs-logo {
+        width: 30px;
+        height: 30px;
+    }
+}
