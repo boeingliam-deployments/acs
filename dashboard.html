@@ -12,53 +12,49 @@
             <div style="font-weight: 800;">Auchat Communication System</div>
         </div>
         <div style="display:flex; align-items:center; gap:20px;">
-            <span id="userLabel" style="font-size:0.7rem; color:var(--text-secondary); text-transform:uppercase;"></span>
+            <span id="userLabel" style="font-size:0.75rem; color:var(--text-secondary);"></span>
             <button class="btn btn-outline" onclick="localStorage.clear(); location.href='index.html'">LOGOUT</button>
         </div>
     </nav>
 
-    <div id="prefScreen" style="text-align: center; padding: 100px 5%;">
+    <div id="prefScreen" style="text-align: center; padding: 80px 5%;">
         <h1>Choose Workspace</h1>
-        <div class="info-grid" style="max-width:1200px; margin: 40px auto;">
-            <div class="card" onclick="selectRole('Department')" style="cursor:pointer"><h3>Department</h3></div>
-            <div class="card" onclick="selectRole('Business')" style="cursor:pointer"><h3>Business</h3></div>
-            <div class="card" onclick="selectRole('Server')" style="cursor:pointer"><h3>RP Server</h3></div>
+        <div class="info-grid" style="max-width:1100px; margin: 40px auto;">
+            <div class="card" onclick="selectRole('Department')" style="cursor:pointer"><h3>Department</h3><p>Internal Ops</p></div>
+            <div class="card" onclick="selectRole('Business')" style="cursor:pointer"><h3>Business</h3><p>Commerce</p></div>
+            <div class="card" onclick="selectRole('Server')" style="cursor:pointer"><h3>RP Server</h3><p>Management</p></div>
         </div>
     </div>
 
-    <div id="mainUI" style="display:none; padding: 40px 5%;">
-        
+    <div id="mainUI" style="display:none; padding: 30px 5%;">
         <div id="devPanel" class="card dev-panel" style="display:none;">
-            <h3 style="color:var(--accent-dev); margin-top:0;">DEVELOPER ROOT CONSOLE</h3>
-            <div style="display:flex; gap:10px;">
-                <button class="btn" style="background:var(--accent-dev)" onclick="alert('Maintenance Toggled')">Toggle Maintenance</button>
-                <button class="btn btn-outline" onclick="alert('Logs Fetched')">View Raw DB Logs</button>
-            </div>
-            <div class="terminal">> Connection secure. Ready for override commands.</div>
+            <h3 style="color:var(--accent-dev); margin-top:0;">DEVELOPER ROOT ACCESS</h3>
+            <button class="btn" style="background:var(--accent-dev)" onclick="alert('Maintenance Toggled')">Toggle Maintenance</button>
+            <div class="terminal">> System stable. Overrides enabled.</div>
         </div>
 
         <div id="modTools" class="card mod-panel" style="display:none;">
-            <h3 style="color:#ef4444; margin-top:0;">Moderation Command Suite</h3>
+            <h3 id="modTitle" style="color:#ef4444; margin-top:0;">Moderation Suite</h3>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <input type="text" id="target" placeholder="User ID / Server ID..." style="width:250px;">
-                <button class="btn btn-red" onclick="alert('User Punished')">/warn</button>
-                <button class="btn btn-red" onclick="alert('User Suspended')">/suspend</button>
+                <button class="btn btn-red" onclick="alert('Warn Sent')">/warn</button>
+                <button class="btn btn-red" onclick="alert('Suspension Applied')">/suspend</button>
                 <button class="btn btn-red" style="background:#450a0a" onclick="alert('User Banned')">/ban</button>
-                <div id="execButtons" style="display:flex; gap:10px;"></div>
+                <div id="execButtons"></div>
             </div>
         </div>
 
-        <div class="info-grid" style="grid-template-columns: 320px 1fr; align-items: start;">
-            <div class="card" style="height: 60vh;">
-                <h4>Navigation</h4>
+        <div class="info-grid" style="grid-template-columns: 300px 1fr; align-items: start;">
+            <div class="card">
+                <h4 id="sideTitle">NAVIGATION</h4>
                 <div id="dynamicNav"></div>
             </div>
-            <div class="card">
-                <h2 id="roleTitle">Environment Loaded</h2>
+            <div class="card" id="moduleContent">
+                <h2 id="roleTitle">ENVIRONMENT</h2>
                 <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                    <div class="card" style="background:rgba(255,255,255,0.02)"><h4>Module Status</h4><p>Operational</p></div>
-                    <div class="card" style="background:rgba(255,255,255,0.02)"><h4>Encryption</h4><p>End-to-End Active</p></div>
+                    <div class="card" style="background:rgba(255,255,255,0.02)"><h4>Status</h4><p>Operational</p></div>
+                    <div class="card" style="background:rgba(255,255,255,0.02)"><h4>Security</h4><p>ASIO Encrypted</p></div>
                 </div>
             </div>
         </div>
@@ -68,39 +64,56 @@
         const navData = {
             'Department': ['Chat', 'HR Announcements', 'Roles', 'Resources'],
             'Business': ['Commissions', 'Chat', 'Improvements', 'Announcements', 'Assets'],
-            'Server': ['Announcements', 'Global Chat', 'Moderation Logs', 'RP Stuff']
+            'Server': ['Announcements', 'Global Chat', 'Moderation Logs', 'RP Assets']
         };
 
         function checkAuth() {
             const email = localStorage.getItem('userEmail');
             if(!email) window.location.href = 'index.html';
-            document.getElementById('userLabel').innerText = "Auth: " + email;
+            const label = document.getElementById('userLabel');
+            if(email.endsWith('@asio.hr.auchat')) label.innerHTML = `<span class="badge badge-asio">ASIO HR</span> ${email}`;
+            else if(email.endsWith('@executive.auchat')) label.innerHTML = `<span class="badge badge-exec">EXECUTIVE</span> ${email}`;
+            else if(email.endsWith('@developer.auchat')) label.innerHTML = `<span class="badge badge-dev">DEV</span> ${email}`;
+            else label.innerText = "AUTH: " + email;
         }
 
         function selectRole(role) {
             const email = localStorage.getItem('userEmail').toLowerCase();
             document.getElementById('prefScreen').style.display = 'none';
             document.getElementById('mainUI').style.display = 'block';
-            document.getElementById('roleTitle').innerText = role.toUpperCase() + " WORKSPACE";
+            document.getElementById('roleTitle').innerText = role.toUpperCase() + " OVERVIEW";
 
             const nav = document.getElementById('dynamicNav');
             nav.innerHTML = '';
             navData[role].forEach(n => {
-                nav.innerHTML += `<div class="sidebar-item" onclick="alert('Loading ${n}...')">${n}</div>`;
+                nav.innerHTML += `<div class="sidebar-item" onclick="loadContent('${n}', '${role}')">${n}</div>`;
             });
 
-            // Permission Checks
+            // Permission Tiers
             if(email.endsWith('@safetyofficers.auchat') || email.endsWith('@executive.auchat') || email.endsWith('@developer.auchat')) {
                 document.getElementById('modTools').style.display = 'block';
             }
             if(email.endsWith('@executive.auchat') || email.endsWith('@developer.auchat')) {
-                document.getElementById('execButtons').innerHTML = `
-                    <button class="btn btn-outline" onclick="alert('Server Banned')">Ban Server</button>
-                    <button class="btn btn-outline" onclick="alert('Server Infracted')">Infraction</button>
-                `;
+                document.getElementById('modTitle').innerText = "Executive Command Suite";
+                document.getElementById('execButtons').innerHTML = `<button class="btn btn-outline" onclick="alert('Server Banned')">Ban Server</button>`;
             }
-            if(email.endsWith('@developer.auchat')) {
-                document.getElementById('devPanel').style.display = 'block';
+            if(email.endsWith('@developer.auchat')) document.getElementById('devPanel').style.display = 'block';
+        }
+
+        function loadContent(name, role) {
+            const content = document.getElementById('moduleContent');
+            const email = localStorage.getItem('userEmail').toLowerCase();
+            const isHR = email.endsWith('@asio.hr.auchat') || email.endsWith('@developer.auchat');
+
+            content.innerHTML = `<h2>${name}</h2><hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">`;
+
+            if(name === 'HR Announcements' && isHR) {
+                content.innerHTML += `<input type="text" placeholder="Broadcast..."><button class="btn btn-blue" style="margin-top:10px;">Post Announcement</button>`;
+            } else if(name === 'Resources') {
+                content.innerHTML += `<div class="resource-link">ASIO SOP Doc <button class="btn btn-outline">VIEW</button></div>`;
+                if(isHR) content.innerHTML += `<button class="btn btn-blue" style="margin-top:15px;">Upload Link</button>`;
+            } else {
+                content.innerHTML += `<div class="terminal">> Loading ${name} modules... Complete.</div>`;
             }
         }
     </script>
