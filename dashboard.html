@@ -1,31 +1,108 @@
-function selectRole(role) {
-    const email = localStorage.getItem('userEmail').toLowerCase();
-    document.getElementById('prefScreen').style.display = 'none';
-    document.getElementById('mainUI').style.display = 'block';
-    document.getElementById('viewTitle').innerText = role.toUpperCase() + " ENVIRONMENT";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>ACS Dashboard</title>
+</head>
+<body onload="checkAuth()">
+    <nav>
+        <div class="logo-container">
+            <img src="https://cdn.discordapp.com/emojis/1469497144091217962.webp?size=128" class="acs-logo">
+            <div style="font-weight: 800;">Auchat Communication System</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <span id="userLabel" style="font-size:0.7rem; color:var(--text-secondary); text-transform:uppercase;"></span>
+            <button class="btn btn-outline" onclick="localStorage.clear(); location.href='index.html'">LOGOUT</button>
+        </div>
+    </nav>
 
-    // Build the Sidebar
-    const nav = document.getElementById('dynamicNav');
-    nav.innerHTML = '';
-    navData[role].forEach(item => {
-        nav.innerHTML += `<li class="sidebar-item" onclick="loadContent('${item.name}')"><span>${item.icon}</span> ${item.name}</li>`;
-    });
+    <div id="prefScreen" style="text-align: center; padding: 100px 5%;">
+        <h1>Choose Workspace</h1>
+        <div class="info-grid" style="max-width:1200px; margin: 40px auto;">
+            <div class="card" onclick="selectRole('Department')" style="cursor:pointer"><h3>Department</h3></div>
+            <div class="card" onclick="selectRole('Business')" style="cursor:pointer"><h3>Business</h3></div>
+            <div class="card" onclick="selectRole('Server')" style="cursor:pointer"><h3>RP Server</h3></div>
+        </div>
+    </div>
 
-    // PERMISSION CHECK
-    const isSafety = email.endsWith('@safetyofficers.auchat');
-    const isExecutive = email.endsWith('@executive.auchat');
-
-    if (isSafety || isExecutive) {
-        document.getElementById('modTools').style.display = 'block';
+    <div id="mainUI" style="display:none; padding: 40px 5%;">
         
-        // If they are a Super Admin (Executive), add extra buttons
-        if (isExecutive) {
-            const modContainer = document.querySelector('#modTools div');
-            modContainer.innerHTML += `
-                <button class="btn btn-red" style="background:#000; border: 1px solid var(--accent-red);" onclick="execCommand('BAN SERVER')">BAN SERVER</button>
-                <button class="btn btn-red" style="background:#000; border: 1px solid var(--accent-red);" onclick="execCommand('SUSPEND SERVER')">SUSPEND SERVER</button>
-            `;
-            document.querySelector('.admin-badge').innerText = "SYSTEM EXECUTIVE";
+        <div id="devPanel" class="card dev-panel" style="display:none;">
+            <h3 style="color:var(--accent-dev); margin-top:0;">DEVELOPER ROOT CONSOLE</h3>
+            <div style="display:flex; gap:10px;">
+                <button class="btn" style="background:var(--accent-dev)" onclick="alert('Maintenance Toggled')">Toggle Maintenance</button>
+                <button class="btn btn-outline" onclick="alert('Logs Fetched')">View Raw DB Logs</button>
+            </div>
+            <div class="terminal">> Connection secure. Ready for override commands.</div>
+        </div>
+
+        <div id="modTools" class="card mod-panel" style="display:none;">
+            <h3 style="color:#ef4444; margin-top:0;">Moderation Command Suite</h3>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <input type="text" id="target" placeholder="User ID / Server ID..." style="width:250px;">
+                <button class="btn btn-red" onclick="alert('User Punished')">/warn</button>
+                <button class="btn btn-red" onclick="alert('User Suspended')">/suspend</button>
+                <button class="btn btn-red" style="background:#450a0a" onclick="alert('User Banned')">/ban</button>
+                <div id="execButtons" style="display:flex; gap:10px;"></div>
+            </div>
+        </div>
+
+        <div class="info-grid" style="grid-template-columns: 320px 1fr; align-items: start;">
+            <div class="card" style="height: 60vh;">
+                <h4>Navigation</h4>
+                <div id="dynamicNav"></div>
+            </div>
+            <div class="card">
+                <h2 id="roleTitle">Environment Loaded</h2>
+                <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div class="card" style="background:rgba(255,255,255,0.02)"><h4>Module Status</h4><p>Operational</p></div>
+                    <div class="card" style="background:rgba(255,255,255,0.02)"><h4>Encryption</h4><p>End-to-End Active</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const navData = {
+            'Department': ['Chat', 'HR Announcements', 'Roles', 'Resources'],
+            'Business': ['Commissions', 'Chat', 'Improvements', 'Announcements', 'Assets'],
+            'Server': ['Announcements', 'Global Chat', 'Moderation Logs', 'RP Stuff']
+        };
+
+        function checkAuth() {
+            const email = localStorage.getItem('userEmail');
+            if(!email) window.location.href = 'index.html';
+            document.getElementById('userLabel').innerText = "Auth: " + email;
         }
-    }
-}
+
+        function selectRole(role) {
+            const email = localStorage.getItem('userEmail').toLowerCase();
+            document.getElementById('prefScreen').style.display = 'none';
+            document.getElementById('mainUI').style.display = 'block';
+            document.getElementById('roleTitle').innerText = role.toUpperCase() + " WORKSPACE";
+
+            const nav = document.getElementById('dynamicNav');
+            nav.innerHTML = '';
+            navData[role].forEach(n => {
+                nav.innerHTML += `<div class="sidebar-item" onclick="alert('Loading ${n}...')">${n}</div>`;
+            });
+
+            // Permission Checks
+            if(email.endsWith('@safetyofficers.auchat') || email.endsWith('@executive.auchat') || email.endsWith('@developer.auchat')) {
+                document.getElementById('modTools').style.display = 'block';
+            }
+            if(email.endsWith('@executive.auchat') || email.endsWith('@developer.auchat')) {
+                document.getElementById('execButtons').innerHTML = `
+                    <button class="btn btn-outline" onclick="alert('Server Banned')">Ban Server</button>
+                    <button class="btn btn-outline" onclick="alert('Server Infracted')">Infraction</button>
+                `;
+            }
+            if(email.endsWith('@developer.auchat')) {
+                document.getElementById('devPanel').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
