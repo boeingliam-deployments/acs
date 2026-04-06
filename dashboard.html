@@ -1,142 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
-    <title>ACS | Dashboard</title>
-</head>
-<body onload="checkAuth()">
-    <nav>
-        <div class="logo-container">
-            <img src="https://cdn.discordapp.com/emojis/1469497144091217962.webp?size=128" class="acs-logo">
-            <div style="font-weight: 800; letter-spacing: 1px;">Auchat Communication System</div>
-        </div>
-        <div style="display:flex; align-items:center; gap:20px;">
-            <span id="userLabel" style="font-size:0.75rem; color:var(--text-secondary);"></span>
-            <button class="btn btn-outline" onclick="localStorage.clear(); location.href='index.html'">SYSTEM LOGOUT</button>
-        </div>
-    </nav>
+function selectRole(role) {
+    const email = localStorage.getItem('userEmail').toLowerCase();
+    document.getElementById('prefScreen').style.display = 'none';
+    document.getElementById('mainUI').style.display = 'block';
+    document.getElementById('viewTitle').innerText = role.toUpperCase() + " ENVIRONMENT";
 
-    <div id="prefScreen" class="container" style="text-align:center; margin-top:10vh;">
-        <h1 style="font-size: 3rem;">Authorized Access Required.</h1>
-        <p>Select an operational environment to initialize modules.</p>
-        <div class="info-grid">
-            <div class="info-card" onclick="selectRole('Department')">
-                <h3 style="color:var(--accent-blue);">DEPARTMENT</h3>
-                <p>Public Safety & Ops</p>
-            </div>
-            <div class="info-card" onclick="selectRole('Business')">
-                <h3 style="color:var(--accent-blue);">BUSINESS</h3>
-                <p>Commerce & Assets</p>
-            </div>
-            <div class="info-card" onclick="selectRole('RP Server')">
-                <h3 style="color:var(--accent-blue);">RP SERVER</h3>
-                <p>Global Management</p>
-            </div>
-        </div>
-    </div>
+    // Build the Sidebar
+    const nav = document.getElementById('dynamicNav');
+    nav.innerHTML = '';
+    navData[role].forEach(item => {
+        nav.innerHTML += `<li class="sidebar-item" onclick="loadContent('${item.name}')"><span>${item.icon}</span> ${item.name}</li>`;
+    });
 
-    <div id="mainUI" style="display:none; padding: 30px 5%;">
+    // PERMISSION CHECK
+    const isSafety = email.endsWith('@safetyofficers.auchat');
+    const isExecutive = email.endsWith('@executive.auchat');
+
+    if (isSafety || isExecutive) {
+        document.getElementById('modTools').style.display = 'block';
         
-        <div id="modTools" style="display:none; border: 1px solid var(--accent-red); background: rgba(127,29,29,0.05); padding: 25px; border-radius:12px; margin-bottom: 30px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="color: #ef4444; margin:0;">EXECUTIVE COMMAND SUITE <span class="admin-badge">Level 4 Clearance</span></h3>
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <input type="text" id="target" placeholder="Search Account / Server ID..." style="width:300px;">
-                <button class="btn btn-red" onclick="execCommand('WARN')">/warn</button>
-                <button class="btn btn-red" onclick="execCommand('SUSPEND')">/suspend</button>
-                <button class="btn btn-red" style="background:#450a0a;" onclick="execCommand('BAN')">/ban</button>
-                <button class="btn btn-outline" onclick="execCommand('INFRACT')">INFRACT SERVER</button>
-            </div>
-        </div>
-
-        <div class="grid-main">
-            <div class="card" style="padding:20px; height: 70vh;">
-                <h4 id="sidebarTitle">NAVIGATION</h4>
-                <ul class="sidebar-list" id="dynamicNav">
-                    </ul>
-            </div>
-
-            <div class="card" style="padding:30px;">
-                <h2 id="viewTitle">Initialize System...</h2>
-                <hr style="border:0; border-top: 1px solid var(--border); margin: 20px 0;">
-                
-                <div id="moduleContent">
-                    <div class="placeholder-card">Select a navigation item to view data.</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const navData = {
-            'Department': [
-                {name: 'Department Chat', icon: '💬'},
-                {name: 'HR Announcements', icon: '📢'},
-                {name: 'Unit Roles', icon: '👥'},
-                {name: 'Resources', icon: '📂'}
-            ],
-            'Business': [
-                {name: 'Commission Page', icon: '💰'},
-                {name: 'Business Chat', icon: '💬'},
-                {name: 'Improvements', icon: '📈'},
-                {name: 'Announcements', icon: '📢'},
-                {name: 'Business Assets', icon: '📦'}
-            ],
-            'RP Server': [
-                {name: 'Server Announcements', icon: '📢'},
-                {name: 'Global Chat', icon: '💬'},
-                {name: 'Moderation Logs', icon: '📜'},
-                {name: 'RP Assets', icon: '🎭'}
-            ]
-        };
-
-        function checkAuth() {
-            const email = localStorage.getItem('userEmail');
-            if(!email) window.location.href = 'index.html';
-            document.getElementById('userLabel').innerText = "OPERATOR: " + email.toUpperCase();
-        }
-
-        function selectRole(role) {
-            const email = localStorage.getItem('userEmail');
-            document.getElementById('prefScreen').style.display = 'none';
-            document.getElementById('mainUI').style.display = 'block';
-            document.getElementById('viewTitle').innerText = role + " Overview";
-            
-            // Build Dynamic Nav
-            const nav = document.getElementById('dynamicNav');
-            nav.innerHTML = '';
-            navData[role].forEach(item => {
-                nav.innerHTML += `<li class="sidebar-item" onclick="loadContent('${item.name}')"><span>${item.icon}</span> ${item.name}</li>`;
-            });
-
-            // Executive Check
-            if(email.endsWith('@safetyofficers.auchat')) {
-                document.getElementById('modTools').style.display = 'block';
-            }
-        }
-
-        function loadContent(name) {
-            const content = document.getElementById('moduleContent');
-            document.getElementById('viewTitle').innerText = name;
-            
-            // Create a professional placeholder for each tab
-            content.innerHTML = `
-                <div class="placeholder-card">
-                    <p style="color:var(--accent-blue); font-weight:bold;">LOADED: ${name.toUpperCase()}</p>
-                    <p style="font-size:0.9rem;">Displaying real-time data for ${name}. System is operational.</p>
-                    <div class="log-entry">> [SECURE] Fetching ${name} database entries...</div>
-                    <div class="log-entry">> [SUCCESS] Connection established.</div>
-                </div>
+        // If they are a Super Admin (Executive), add extra buttons
+        if (isExecutive) {
+            const modContainer = document.querySelector('#modTools div');
+            modContainer.innerHTML += `
+                <button class="btn btn-red" style="background:#000; border: 1px solid var(--accent-red);" onclick="execCommand('BAN SERVER')">BAN SERVER</button>
+                <button class="btn btn-red" style="background:#000; border: 1px solid var(--accent-red);" onclick="execCommand('SUSPEND SERVER')">SUSPEND SERVER</button>
             `;
+            document.querySelector('.admin-badge').innerText = "SYSTEM EXECUTIVE";
         }
-
-        function execCommand(cmd) {
-            const target = document.getElementById('target').value;
-            if(!target) return alert("Error: No target specified.");
-            alert(`EXECUTIVE ACTION: Command [${cmd}] successfully executed against [${target}]. Entry logged.`);
-        }
-    </script>
-</body>
-</html>
+    }
+}
