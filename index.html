@@ -2,57 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ACS | Auchat Communication System</title>
+    <title>Auchat Communication System | Gateway</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav>
         <div class="logo-container">
-            <img src="https://cdn.discordapp.com/emojis/1469497144091217962.webp?size=128" class="acs-logo" alt="ACS Logo">
-            <div style="font-weight: 800; letter-spacing: 1px; font-size: 1.1rem;">Auchat Communication System</div>
+            <img src="https://cdn.discordapp.com/emojis/1469497144091217962.webp?size=128" class="acs-logo">
+            <div style="font-weight: 800; letter-spacing: 1px;">Auchat Communication System</div>
         </div>
-        <button class="btn btn-blue" onclick="document.getElementById('loginModal').style.display='flex'">AUTHORIZE ACCESS</button>
+        <button class="btn btn-blue" onclick="document.getElementById('loginModal').style.display='flex'">AUTHORIZE</button>
     </nav>
 
-    <div style="text-align: center; padding: 80px 20px 40px;">
-        <h1 style="font-size: 3.5rem; margin: 0; color: var(--text-primary);">Auchat Communication System</h1>
-        <p style="color: var(--accent-blue); font-weight: 600; letter-spacing: 2px;">SECURE OPERATIONAL GATEWAY</p>
+    <div style="text-align: center; padding: 100px 20px 40px;">
+        <h1 style="font-size: 4rem; margin: 0;">Operational Security.</h1>
+        <p style="color: var(--text-secondary); font-size: 1.2rem; max-width: 700px; margin: 20px auto;">
+            The ACS provides high-level communications and resource management for authorized personnel.
+        </p>
     </div>
 
-    <div class="info-section">
-        <div class="info-card">
+    <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 0 20px;">
+        <div class="card">
             <h3>System Intelligence</h3>
-            <p>The Auchat Communication System (ACS) was created by the Executive Director, <strong>nswamboguy</strong>, and developed by <strong>boeingliam</strong>. As the primary architects of this project, they work closely to ensure the ACS provides peak performance and reliability for all users.</p>
+            <p>The Auchat Communication System (ACS) was created by the executive director, <strong>nswamboguy</strong> and developed by <strong>boeingliam</strong>! These 2 are the main planners of this project and work closely to commit the best to the ACS.</p>
         </div>
 
         <div class="info-grid">
-            <div class="q-box">
-                <h4 style="margin-top:0; color: var(--accent-blue);">How do I get an account?</h4>
-                <p style="font-size: 0.9rem;">To receive authorized credentials, you must contact the Executive Board via official channels.</p>
+            <div class="card">
+                <h4 style="color:var(--accent-blue)">How do I get an account?</h4>
+                <p style="font-size: 0.9rem;">To get an account you must Contact us via official executive channels.</p>
             </div>
-            <div class="q-box">
-                <h4 style="margin-top:0; color: var(--accent-blue);">Usage without account?</h4>
-                <p style="font-size: 0.9rem;">Access is strictly prohibited for unauthorized personnel. An active account is required for all modules.</p>
+            <div class="card">
+                <h4 style="color:var(--accent-blue)">Usage without account?</h4>
+                <p style="font-size: 0.9rem;">Access is strictly prohibited without validated credentials. Guest access is disabled.</p>
             </div>
-            <div class="q-box">
-                <h4 style="margin-top:0; color: var(--accent-blue);">Preferences & Design</h4>
-                <p style="font-size: 0.9rem;">Navigate to Settings > My View > Design to customize your interface experience.</p>
-            </div>
-            <div class="q-box">
-                <h4 style="margin-top:0; color: var(--accent-blue);">System Security</h4>
-                <p style="font-size: 0.9rem;">All sessions are encrypted and logged. Misuse of the ACS will result in immediate revocation of access.</p>
+            <div class="card">
+                <h4 style="color:var(--accent-blue)">Preferences</h4>
+                <p style="font-size: 0.9rem;">Go to settings, my view, design, then click on what you want once authenticated.</p>
             </div>
         </div>
     </div>
 
-    <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; align-items:center; justify-content:center;">
-        <div class="info-card" style="width: 380px; text-align: center;">
+    <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:2000; align-items:center; justify-content:center;">
+        <div class="card" style="width: 380px; text-align: center;">
             <img src="https://cdn.discordapp.com/emojis/1469497144091217962.webp?size=128" style="width:60px; margin-bottom:20px;">
-            <h2 style="margin-top:0;">Identity Check</h2>
-            <input type="email" id="user" placeholder="Email Address" style="background:#161b22; border:1px solid var(--border); padding:12px; width:100%; color:white; margin-bottom:10px; border-radius:6px;">
-            <input type="password" id="pass" placeholder="Password" style="background:#161b22; border:1px solid var(--border); padding:12px; width:100%; color:white; margin-bottom:10px; border-radius:6px;">
-            <button class="btn btn-blue" style="width:100%; margin-top:15px;" onclick="handleLogin()">AUTHORIZE</button>
-            <p onclick="document.getElementById('loginModal').style.display='none'" style="cursor:pointer; font-size:0.8rem; margin-top:15px;">Close Window</p>
+            <h2>Personnel Sign-In</h2>
+            <input type="email" id="user" placeholder="Email Address (@...)" style="margin-bottom:10px;">
+            <input type="password" id="pass" placeholder="Password">
+            <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="handleLogin()">AUTHORIZE ACCESS</button>
+            <p onclick="document.getElementById('loginModal').style.display='none'" style="cursor:pointer; font-size:0.8rem; margin-top:15px; color:var(--text-secondary);">Cancel</p>
         </div>
     </div>
 
@@ -80,7 +78,7 @@
                 const res = await signInWithEmailAndPassword(auth, email, pass);
                 localStorage.setItem('userEmail', res.user.email);
                 window.location.href = 'dashboard.html';
-            } catch (e) { alert("Access Denied."); }
+            } catch (e) { alert("Access Denied: Invalid Credentials."); }
         };
     </script>
 </body>
