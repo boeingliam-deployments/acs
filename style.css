@@ -40,7 +40,9 @@ nav {
 
 #typing-indicator { font-size: 0.75rem; color: var(--text-secondary); height: 20px; font-style: italic; margin-left: 5px; }
 
-.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; }
+.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; transition: 0.3s; }
+.card-hover:hover { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.05); transform: translateY(-5px); cursor: pointer; }
+
 .sidebar-item { padding: 12px; border-radius: 8px; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; gap: 10px; transition: 0.2s; margin-bottom: 4px; }
 .sidebar-item:hover, .sidebar-item.active { background: rgba(59, 130, 246, 0.1); color: white; }
 
@@ -49,4 +51,3 @@ nav {
 .btn-outline { background: transparent; border: 1px solid var(--border); color: white; }
 
 input { background: #161b22; border: 1px solid var(--border); border-radius: 6px; color: white; padding: 12px; width: 100%; outline: none; }
-input:focus { border-color: var(--accent-blue); }
