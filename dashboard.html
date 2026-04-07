@@ -3,118 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
-    <title>ACS Dashboard</title>
+    <title>ACS | Dashboard</title>
 </head>
 <body onload="checkAuth()">
+    <div id="hr-banner">
+        <span id="banner-role"></span>: <span id="banner-text"></span>
+    </div>
+
     <nav>
         <div class="logo-container">
             <img src="https://cdn.discordapp.com/emojis/1469497144091217962.webp?size=128" class="acs-logo">
             <div style="font-weight: 800;">Auchat Communication System</div>
         </div>
-        <div style="display:flex; align-items:center; gap:20px;">
-            <span id="userLabel" style="font-size:0.75rem; color:var(--text-secondary);"></span>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div id="switchZone" style="display:none; gap:10px;">
+                <button class="btn btn-outline" onclick="selectRole('Department')">DEPT</button>
+                <button class="btn btn-outline" onclick="selectRole('Business')">BIZ</button>
+                <button class="btn btn-outline" onclick="selectRole('Server')">SRV</button>
+            </div>
+            <span id="userBadge"></span>
             <button class="btn btn-outline" onclick="localStorage.clear(); location.href='index.html'">LOGOUT</button>
         </div>
     </nav>
 
-    <div id="prefScreen" style="text-align: center; padding: 80px 5%;">
-        <h1>Choose Workspace</h1>
-        <div class="info-grid" style="max-width:1100px; margin: 40px auto;">
-            <div class="card" onclick="selectRole('Department')" style="cursor:pointer"><h3>Department</h3><p>Internal Ops</p></div>
-            <div class="card" onclick="selectRole('Business')" style="cursor:pointer"><h3>Business</h3><p>Commerce</p></div>
-            <div class="card" onclick="selectRole('Server')" style="cursor:pointer"><h3>RP Server</h3><p>Management</p></div>
+    <div id="prefScreen" style="text-align:center; padding: 80px 5%;">
+        <h1>Workspace Selection</h1>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; max-width:900px; margin:40px auto;">
+            <div class="card" onclick="selectRole('Department')" style="cursor:pointer"><h3>Department</h3></div>
+            <div class="card" onclick="selectRole('Business')" style="cursor:pointer"><h3>Business</h3></div>
+            <div class="card" onclick="selectRole('Server')" style="cursor:pointer"><h3>RP Server</h3></div>
         </div>
     </div>
 
     <div id="mainUI" style="display:none; padding: 30px 5%;">
-        <div id="devPanel" class="card dev-panel" style="display:none;">
-            <h3 style="color:var(--accent-dev); margin-top:0;">DEVELOPER ROOT ACCESS</h3>
-            <button class="btn" style="background:var(--accent-dev)" onclick="alert('Maintenance Toggled')">Toggle Maintenance</button>
-            <div class="terminal">> System stable. Overrides enabled.</div>
-        </div>
-
-        <div id="modTools" class="card mod-panel" style="display:none;">
-            <h3 id="modTitle" style="color:#ef4444; margin-top:0;">Moderation Suite</h3>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <input type="text" id="target" placeholder="User ID / Server ID..." style="width:250px;">
-                <button class="btn btn-red" onclick="alert('Warn Sent')">/warn</button>
-                <button class="btn btn-red" onclick="alert('Suspension Applied')">/suspend</button>
-                <button class="btn btn-red" style="background:#450a0a" onclick="alert('User Banned')">/ban</button>
-                <div id="execButtons"></div>
-            </div>
-        </div>
-
-        <div class="info-grid" style="grid-template-columns: 300px 1fr; align-items: start;">
+        <div style="display:grid; grid-template-columns: 300px 1fr; gap:25px;">
             <div class="card">
-                <h4 id="sideTitle">NAVIGATION</h4>
+                <h4 id="currentEnv">ENVIRONMENT</h4>
                 <div id="dynamicNav"></div>
             </div>
+
             <div class="card" id="moduleContent">
-                <h2 id="roleTitle">ENVIRONMENT</h2>
-                <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                    <div class="card" style="background:rgba(255,255,255,0.02)"><h4>Status</h4><p>Operational</p></div>
-                    <div class="card" style="background:rgba(255,255,255,0.02)"><h4>Security</h4><p>ASIO Encrypted</p></div>
-                </div>
+                <h2 id="viewTitle">Initialize...</h2>
+                <div id="contentBody"></div>
             </div>
         </div>
     </div>
 
     <script>
+        const email = localStorage.getItem('userEmail') || "";
+        const isDev = email.endsWith('@developer.auchat');
+        const isExec = email.endsWith('@executive.auchat');
+        const isAsioHR = email.endsWith('@asio.hr.auchat');
+
         const navData = {
             'Department': ['Chat', 'HR Announcements', 'Roles', 'Resources'],
             'Business': ['Commissions', 'Chat', 'Improvements', 'Announcements', 'Assets'],
-            'Server': ['Announcements', 'Global Chat', 'Moderation Logs', 'RP Assets']
+            'Server': ['Announcements', 'Chat', 'Moderation & Log', 'RP Stuff']
         };
 
         function checkAuth() {
-            const email = localStorage.getItem('userEmail');
             if(!email) window.location.href = 'index.html';
-            const label = document.getElementById('userLabel');
-            if(email.endsWith('@asio.hr.auchat')) label.innerHTML = `<span class="badge badge-asio">ASIO HR</span> ${email}`;
-            else if(email.endsWith('@executive.auchat')) label.innerHTML = `<span class="badge badge-exec">EXECUTIVE</span> ${email}`;
-            else if(email.endsWith('@developer.auchat')) label.innerHTML = `<span class="badge badge-dev">DEV</span> ${email}`;
-            else label.innerText = "AUTH: " + email;
+            const badge = document.getElementById('userBadge');
+            if(isDev) badge.innerHTML = `<span style="color:var(--accent-dev); font-weight:900;">👑 DEVELOPER</span>`;
+            else if(isExec) badge.innerHTML = `<span style="color:#ffd700;">EXEC</span>`;
+            else if(isAsioHR) badge.innerHTML = `<span style="color:var(--accent-asio);">ASIO HR</span>`;
+            
+            // Devs/Execs can switch easily
+            if(isDev || isExec) document.getElementById('switchZone').style.display = 'flex';
         }
 
         function selectRole(role) {
-            const email = localStorage.getItem('userEmail').toLowerCase();
             document.getElementById('prefScreen').style.display = 'none';
             document.getElementById('mainUI').style.display = 'block';
-            document.getElementById('roleTitle').innerText = role.toUpperCase() + " OVERVIEW";
-
+            document.getElementById('currentEnv').innerText = role.toUpperCase();
+            
             const nav = document.getElementById('dynamicNav');
             nav.innerHTML = '';
             navData[role].forEach(n => {
-                nav.innerHTML += `<div class="sidebar-item" onclick="loadContent('${n}', '${role}')">${n}</div>`;
+                nav.innerHTML += `<div class="sidebar-item" onclick="loadTab('${n}', '${role}')">${n}</div>`;
             });
-
-            // Permission Tiers
-            if(email.endsWith('@safetyofficers.auchat') || email.endsWith('@executive.auchat') || email.endsWith('@developer.auchat')) {
-                document.getElementById('modTools').style.display = 'block';
-            }
-            if(email.endsWith('@executive.auchat') || email.endsWith('@developer.auchat')) {
-                document.getElementById('modTitle').innerText = "Executive Command Suite";
-                document.getElementById('execButtons').innerHTML = `<button class="btn btn-outline" onclick="alert('Server Banned')">Ban Server</button>`;
-            }
-            if(email.endsWith('@developer.auchat')) document.getElementById('devPanel').style.display = 'block';
+            loadTab('Chat', role);
         }
 
-        function loadContent(name, role) {
-            const content = document.getElementById('moduleContent');
-            const email = localStorage.getItem('userEmail').toLowerCase();
-            const isHR = email.endsWith('@asio.hr.auchat') || email.endsWith('@developer.auchat');
+        function loadTab(name, role) {
+            const body = document.getElementById('contentBody');
+            document.getElementById('viewTitle').innerText = name;
 
-            content.innerHTML = `<h2>${name}</h2><hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">`;
-
-            if(name === 'HR Announcements' && isHR) {
-                content.innerHTML += `<input type="text" placeholder="Broadcast..."><button class="btn btn-blue" style="margin-top:10px;">Post Announcement</button>`;
-            } else if(name === 'Resources') {
-                content.innerHTML += `<div class="resource-link">ASIO SOP Doc <button class="btn btn-outline">VIEW</button></div>`;
-                if(isHR) content.innerHTML += `<button class="btn btn-blue" style="margin-top:15px;">Upload Link</button>`;
+            if(name === 'Chat') {
+                body.innerHTML = `
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatBox">
+                            <div class="msg"><span class="msg-author">[SYSTEM]</span> Welcome to ${role} encrypted communications.</div>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" id="chatIn" placeholder="Send message...">
+                            <button class="btn btn-blue" onclick="sendChat()">SEND</button>
+                        </div>
+                    </div>`;
+            } else if(name.includes('Announcements')) {
+                let controls = (isDev || isExec || isAsioHR) ? `
+                    <div style="margin-bottom:20px;">
+                        <input type="text" id="annText" placeholder="Broadcast message...">
+                        <button class="btn btn-red" style="margin-top:10px;" onclick="broadcast('${role}')">SEND URGENT BANNER</button>
+                    </div>` : '';
+                body.innerHTML = controls + `<div class="card">Recent Announcements will appear here.</div>`;
+            } else if(name === 'Roles' || name.includes('Moderation')) {
+                if(isDev || isExec || isAsioHR) {
+                    body.innerHTML = `
+                        <h4>Role Management</h4>
+                        <input type="text" placeholder="Role Name...">
+                        <button class="btn btn-blue" style="margin-top:10px;">CREATE ROLE</button>
+                        <button class="btn btn-outline" style="margin-top:10px;">ASSIGN PERMS</button>
+                    `;
+                } else {
+                    body.innerHTML = `<p>Access Denied. You do not have HR permissions for this department.</p>`;
+                }
             } else {
-                content.innerHTML += `<div class="terminal">> Loading ${name} modules... Complete.</div>`;
+                body.innerHTML = `<div class="card">Standard module resources for ${role} are being retrieved.</div>`;
             }
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chatIn');
+            const box = document.getElementById('chatBox');
+            if(!input.value) return;
+            
+            let authorClass = isDev ? 'dev-text' : '';
+            let icon = isDev ? '👑 ' : '';
+            
+            box.innerHTML += `
+                <div class="msg">
+                    <span class="msg-author ${authorClass}">${icon}${email.split('@')[0]}</span>
+                    <span class="${authorClass}">${input.value}</span>
+                </div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function broadcast(role) {
+            const msg = document.getElementById('annText').value;
+            const banner = document.getElementById('hr-banner');
+            document.getElementById('banner-role').innerText = role + " HR";
+            document.getElementById('banner-text').innerText = msg;
+            
+            banner.classList.add('active');
+            setTimeout(() => banner.classList.remove('active'), 5000);
         }
     </script>
 </body>
