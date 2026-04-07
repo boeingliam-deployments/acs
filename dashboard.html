@@ -79,7 +79,6 @@
         const isAsioHR = email.endsWith('@asio.hr.auchat');
 
         let activeSub = null;
-        let typingSub = null;
 
         window.checkAuth = () => {
             if(!email) window.location.href = 'index.html';
@@ -103,15 +102,15 @@
             
             const nav = document.getElementById('dynamicNav');
             nav.innerHTML = '';
-            const tabs = ['Chat', 'HR Announcements', 'Resources', 'Roles'];
+            const tabs = ['Chat', 'HR Announcements', 'Resources', 'Settings'];
             tabs.forEach(t => nav.innerHTML += `<div class="sidebar-item" onclick="loadTab('${t}', '${role}')">${t}</div>`);
             loadTab('Chat', role);
 
-            // Global real-time listener for Priority Banners
+            // Global Priority Alert Listener
             onSnapshot(query(collection(db, `global_announcements`), orderBy("timestamp", "desc"), limit(1)), (snap) => {
                 snap.forEach(d => {
                     const data = d.data();
-                    if(Date.now() - data.timestamp?.toMillis() < 10000) {
+                    if(data.timestamp && Date.now() - data.timestamp.toMillis() < 10000) {
                         showBanner(data.role, data.text);
                     }
                 });
@@ -120,36 +119,32 @@
 
         window.loadTab = (name, role) => {
             if(activeSub) activeSub();
-            if(typingSub) typingSub();
-            
             const body = document.getElementById('contentBody');
             document.getElementById('viewTitle').innerText = name;
 
             if(name === 'Chat' || name === 'HR Announcements') {
-                const isHRTab = name === 'HR Announcements';
+                const isHR = name === 'HR Announcements';
                 body.innerHTML = `
                     <div class="chat-container">
                         <div class="scroll-area" id="feedBox"></div>
-                        <div id="typing-indicator" style="font-size:0.7rem; height:15px; margin:5px; color:var(--text-secondary)"></div>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" id="inputField" placeholder="Type message..." autocomplete="off">
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <input type="text" id="inputField" placeholder="Type here..." autocomplete="off">
                             <button class="btn btn-blue" id="actionBtn">SEND</button>
                         </div>
                     </div>`;
-                
-                const colPath = isHRTab ? `announcements/${role}/posts` : `chats/${role}/messages`;
-                setupLiveFeed(colPath, role, isHRTab);
+                setupLiveFeed(isHR ? `announcements/${role}/posts` : `chats/${role}/messages`, role, isHR);
             } 
-            else if(name === 'Resources') {
+            else if(name === 'Settings') {
                 body.innerHTML = `
-                    <div id="resourceList" class="scroll-area" style="height:400px; margin-bottom:15px;"></div>
-                    ${(isAsioHR || isDev) ? `
-                    <div class="card">
-                        <input type="text" id="resTitle" placeholder="File Name...">
-                        <input type="text" id="resLink" placeholder="Link (URL)..." style="margin-top:10px;">
-                        <button class="btn btn-asio" style="margin-top:10px; width:100%" onclick="uploadResource('${role}')">UPLOAD TO DB</button>
-                    </div>` : ''}`;
-                setupLiveResources(role);
+                    <h3>System Preferences</h3>
+                    <div class="faq-item" style="margin-bottom:10px;">
+                        <h4>My View</h4>
+                        <p>Customize your dashboard layout and theme colors.</p>
+                        <button class="btn btn-outline" onclick="alert('UI Customization Coming Soon')">Design Settings</button>
+                    </div>`;
+            }
+            else {
+                body.innerHTML = `<p>Module ${name} is active.</p>`;
             }
         };
 
@@ -158,17 +153,15 @@
             const btn = document.getElementById('actionBtn');
             const box = document.getElementById('feedBox');
 
-            const q = query(collection(db, path), orderBy("timestamp", "asc"));
-            activeSub = onSnapshot(q, (snap) => {
+            activeSub = onSnapshot(query(collection(db, path), orderBy("timestamp", "asc")), (snap) => {
                 box.innerHTML = '';
                 snap.forEach(d => {
                     const data = d.data();
                     const isDevMsg = data.sender.endsWith('@developer.auchat');
-                    box.innerHTML += `
-                        <div class="msg ${isHR ? 'msg-hr' : ''}">
-                            <span class="msg-author ${isDevMsg ? 'dev-text' : ''}">${isDevMsg ? '👑 ' : ''}${data.sender.split('@')[0]}</span>
-                            <span>${data.text}</span>
-                        </div>`;
+                    box.innerHTML += `<div class="msg ${isHR ? 'msg-hr' : ''}">
+                        <span class="msg-author ${isDevMsg ? 'dev-text' : ''}">${isDevMsg ? '👑 ' : ''}${data.sender.split('@')[0]}</span>
+                        <span>${data.text}</span>
+                    </div>`;
                 });
                 box.scrollTop = box.scrollHeight;
             });
@@ -177,41 +170,11 @@
                 if(!input.value.trim()) return;
                 const txt = input.value; input.value = '';
                 await addDoc(collection(db, path), { sender: email, text: txt, timestamp: serverTimestamp() });
-                
-                if(isHR) {
-                    await addDoc(collection(db, `global_announcements`), { role: role, text: txt, timestamp: serverTimestamp() });
-                }
+                if(isHR) await addDoc(collection(db, `global_announcements`), { role: role, text: txt, timestamp: serverTimestamp() });
             };
-
             input.onkeydown = (e) => { if(e.key === 'Enter') send(); };
             btn.onclick = send;
         }
-
-        function setupLiveResources(role) {
-            const list = document.getElementById('resourceList');
-            activeSub = onSnapshot(query(collection(db, `resources/${role}/files`), orderBy("timestamp", "desc")), (snap) => {
-                list.innerHTML = '';
-                snap.forEach(d => {
-                    const data = d.data();
-                    list.innerHTML += `
-                        <div class="res-card">
-                            <span><b>${data.title}</b></span>
-                            <button class="btn btn-outline" onclick="window.open('${data.link}')">OPEN</button>
-                        </div>`;
-                });
-            });
-        }
-
-        window.uploadResource = async (role) => {
-            const title = document.getElementById('resTitle').value;
-            const link = document.getElementById('resLink').value;
-            if(!title || !link) return;
-            await addDoc(collection(db, `resources/${role}/files`), {
-                title: title, link: link, timestamp: serverTimestamp()
-            });
-            document.getElementById('resTitle').value = '';
-            document.getElementById('resLink').value = '';
-        };
 
         function showBanner(role, text) {
             const banner = document.getElementById('hr-banner');
