@@ -14,19 +14,39 @@
         <button class="btn btn-blue" onclick="document.getElementById('loginModal').style.display='flex'">AUTHORIZE ACCESS</button>
     </nav>
 
-    <div style="text-align: center; padding: 120px 20px;">
+    <div style="text-align: center; padding: 100px 20px;">
         <h1 style="font-size: 4rem; margin: 0; letter-spacing: -2px; font-weight: 800;">Secure Comms.</h1>
-        <p style="color: var(--text-secondary); font-size: 1.2rem; max-width: 600px; margin: 25px auto;">
-            Created by <b>nswamboguy</b> & developed by <b>boeingliam</b>.
+        <p style="color: var(--text-secondary); font-size: 1.2rem; max-width: 700px; margin: 25px auto; line-height: 1.6;">
+            The Auchat Communication System was created by the executive director, <b>nswamboguy</b> and developed by <b>boeingliam</b>! 
+            These 2 are the main planners of this project and work closely to commit the best to the ACS.
         </p>
     </div>
 
-    <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; align-items:center; justify-content:center;">
-        <div class="card" style="width: 350px; text-align: center;">
+    <div class="info-section">
+        <h2 style="font-size: 2rem;">System Information</h2>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h4>How do I get an account?</h4>
+                <p>To get an account you must contact us directly through official channels.</p>
+            </div>
+            <div class="faq-item">
+                <h4>How can I use the system without an account?</h4>
+                <p>You can't. Authorization is required for all modules.</p>
+            </div>
+            <div class="faq-item">
+                <h4>How can I change my system to my preferences?</h4>
+                <p>Once logged in, go to Settings > My View > Design, then click on what you want!</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(10px);">
+        <div class="card" style="width: 350px; text-align: center; border: 1px solid var(--accent-blue);">
             <h3>Personnel Login</h3>
             <input type="email" id="user" placeholder="Email Address" style="margin-bottom:10px;">
             <input type="password" id="pass" placeholder="Password">
             <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="handleLogin()">VERIFY</button>
+            <p onclick="document.getElementById('loginModal').style.display='none'" style="cursor:pointer; font-size:0.8rem; margin-top:15px; color:var(--text-secondary);">Cancel</p>
         </div>
     </div>
 
@@ -35,6 +55,28 @@
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         
         const firebaseConfig = {
+            apiKey: "AIzaSyD-UvH3k2We00wAcsfCTVYJhgNvb7akjd0",
+            authDomain: "rp-portal-7cfdb.firebaseapp.com",
+            projectId: "rp-portal-7cfdb",
+            storageBucket: "rp-portal-7cfdb.firebasestorage.app",
+            messagingSenderId: "1029232195682",
+            appId: "1:1029232195682:web:852e8915f3f5293069793b"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.handleLogin = async () => {
+            const email = document.getElementById('user').value;
+            const pass = document.getElementById('pass').value;
+            try {
+                const res = await signInWithEmailAndPassword(auth, email, pass);
+                localStorage.setItem('userEmail', res.user.email);
+                window.location.href = 'dashboard.html';
+            } catch (e) { alert("Invalid Credentials"); }
+        };
+    </script>
+</body>
+</html>        const firebaseConfig = {
             apiKey: "AIzaSyD-UvH3k2We00wAcsfCTVYJhgNvb7akjd0",
             authDomain: "rp-portal-7cfdb.firebaseapp.com",
             projectId: "rp-portal-7cfdb",
