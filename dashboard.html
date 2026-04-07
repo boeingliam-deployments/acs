@@ -7,7 +7,8 @@
 </head>
 <body onload="checkAuth()">
     <div id="hr-banner">
-        <span id="banner-role"></span>: <span id="banner-text"></span>
+        <span style="font-size: 0.7rem; letter-spacing: 2px;">PRIORITY ONE ALERT</span><br>
+        <b id="banner-role"></b>: <span id="banner-text"></span>
     </div>
 
     <nav>
@@ -16,10 +17,8 @@
             <div style="font-weight: 800;">Auchat Communication System</div>
         </div>
         <div style="display:flex; align-items:center; gap:15px;">
-            <div id="switchZone" style="display:none; gap:10px;">
-                <button class="btn btn-outline" onclick="selectRole('Department')">DEPT</button>
-                <button class="btn btn-outline" onclick="selectRole('Business')">BIZ</button>
-                <button class="btn btn-outline" onclick="selectRole('Server')">SRV</button>
+            <div id="switchZone" style="display:none;">
+                <button class="btn btn-outline" onclick="location.reload()">MAIN MENU</button>
             </div>
             <span id="userBadge"></span>
             <button class="btn btn-outline" onclick="localStorage.clear(); location.href='index.html'">LOGOUT</button>
@@ -27,22 +26,32 @@
     </nav>
 
     <div id="prefScreen" style="text-align:center; padding: 50px 5%;">
-        <h1>Select Operational Environment</h1>
+        <h1>Access Point</h1>
         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; max-width:900px; margin:40px auto;">
-            <div class="card" onclick="selectRole('Department')" style="cursor:pointer"><h3>Department</h3></div>
+            <div class="card" onclick="showSubMenu('Dept')" style="cursor:pointer"><h3>Department</h3></div>
             <div class="card" onclick="selectRole('Business')" style="cursor:pointer"><h3>Business</h3></div>
             <div class="card" onclick="selectRole('Server')" style="cursor:pointer"><h3>RP Server</h3></div>
         </div>
     </div>
 
+    <div id="deptMenu" style="display:none; text-align:center; padding: 50px 5%;">
+        <h1>Select Unit</h1>
+        <div style="display:grid; grid-template-columns: 1fr; max-width:400px; margin:40px auto;">
+            <div class="card" onclick="selectRole('ASIO')" style="border-color:var(--accent-asio); cursor:pointer">
+                <h3 style="color:var(--accent-asio)">ASIO</h3>
+                <p>Intelligence & Security</p>
+            </div>
+        </div>
+    </div>
+
     <div id="mainUI" style="display:none; padding: 20px 5%;">
-        <div style="display:grid; grid-template-columns: 280px 1fr; gap:20px;">
+        <div style="display:grid; grid-template-columns: 280px 1fr; gap:25px;">
             <div class="card">
-                <h4 id="currentEnv">ENVIRONMENT</h4>
-                <div id="dynamicNav"></div>
+                <h4 id="currentEnv" style="opacity:0.5"></h4>
+                <div id="dynamicNav" style="margin-top:20px;"></div>
             </div>
             <div class="card" id="moduleContent">
-                <h2 id="viewTitle">Select a module...</h2>
+                <h2 id="viewTitle"></h2>
                 <div id="contentBody"></div>
             </div>
         </div>
@@ -50,7 +59,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, deleteDoc, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD-UvH3k2We00wAcsfCTVYJhgNvb7akjd0",
@@ -64,114 +73,152 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const email = localStorage.getItem('userEmail') || "";
+        
         const isDev = email.endsWith('@developer.auchat');
         const isExec = email.endsWith('@executive.auchat');
         const isAsioHR = email.endsWith('@asio.hr.auchat');
 
-        let currentChatSub = null;
-        let currentTypingSub = null;
-        let typingTimeout = null;
+        let activeSub = null;
+        let typingSub = null;
 
         window.checkAuth = () => {
             if(!email) window.location.href = 'index.html';
             const badge = document.getElementById('userBadge');
-            if(isDev) badge.innerHTML = `<span style="color:var(--accent-dev); font-weight:900;">👑 DEV</span>`;
-            else if(isExec) badge.innerHTML = `<span style="color:#ffd700;">EXEC</span>`;
-            else if(isAsioHR) badge.innerHTML = `<span style="color:var(--accent-asio);">ASIO HR</span>`;
-            if(isDev || isExec) document.getElementById('switchZone').style.display = 'flex';
+            if(isDev) badge.innerHTML = `<span style="color:var(--accent-dev)">👑 DEV</span>`;
+            else if(isExec) badge.innerHTML = `<span style="color:#ffd700">EXEC</span>`;
+            else if(isAsioHR) badge.innerHTML = `<span style="color:var(--accent-asio)">ASIO HR</span>`;
+            if(isDev || isExec) document.getElementById('switchZone').style.display = 'block';
+        };
+
+        window.showSubMenu = (cat) => {
+            document.getElementById('prefScreen').style.display = 'none';
+            document.getElementById('deptMenu').style.display = 'block';
         };
 
         window.selectRole = (role) => {
             document.getElementById('prefScreen').style.display = 'none';
+            document.getElementById('deptMenu').style.display = 'none';
             document.getElementById('mainUI').style.display = 'block';
-            document.getElementById('currentEnv').innerText = role.toUpperCase();
+            document.getElementById('currentEnv').innerText = role;
+            
             const nav = document.getElementById('dynamicNav');
             nav.innerHTML = '';
-            const tabs = ['Chat', 'Announcements', 'Roles', 'Resources'];
+            const tabs = ['Chat', 'HR Announcements', 'Resources', 'Roles'];
             tabs.forEach(t => nav.innerHTML += `<div class="sidebar-item" onclick="loadTab('${t}', '${role}')">${t}</div>`);
             loadTab('Chat', role);
+
+            // Global real-time listener for Priority Banners
+            onSnapshot(query(collection(db, `global_announcements`), orderBy("timestamp", "desc"), limit(1)), (snap) => {
+                snap.forEach(d => {
+                    const data = d.data();
+                    if(Date.now() - data.timestamp?.toMillis() < 10000) {
+                        showBanner(data.role, data.text);
+                    }
+                });
+            });
         };
 
         window.loadTab = (name, role) => {
-            if(currentChatSub) currentChatSub();
-            if(currentTypingSub) currentTypingSub();
-
+            if(activeSub) activeSub();
+            if(typingSub) typingSub();
+            
             const body = document.getElementById('contentBody');
             document.getElementById('viewTitle').innerText = name;
 
-            if(name === 'Chat') {
+            if(name === 'Chat' || name === 'HR Announcements') {
+                const isHRTab = name === 'HR Announcements';
                 body.innerHTML = `
                     <div class="chat-container">
-                        <div class="chat-messages" id="chatBox"></div>
-                        <div id="typing-indicator"></div>
-                        <div style="display:flex; gap:10px; margin-top:5px;">
-                            <input type="text" id="chatIn" placeholder="Type a message..." autocomplete="off">
-                            <button class="btn btn-blue" id="sendBtn">SEND</button>
+                        <div class="scroll-area" id="feedBox"></div>
+                        <div id="typing-indicator" style="font-size:0.7rem; height:15px; margin:5px; color:var(--text-secondary)"></div>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" id="inputField" placeholder="Type message..." autocomplete="off">
+                            <button class="btn btn-blue" id="actionBtn">SEND</button>
                         </div>
                     </div>`;
                 
-                setupChatLogic(role);
-            } else {
-                body.innerHTML = `<p>Module ${name} initialized for ${role}.</p>`;
+                const colPath = isHRTab ? `announcements/${role}/posts` : `chats/${role}/messages`;
+                setupLiveFeed(colPath, role, isHRTab);
+            } 
+            else if(name === 'Resources') {
+                body.innerHTML = `
+                    <div id="resourceList" class="scroll-area" style="height:400px; margin-bottom:15px;"></div>
+                    ${(isAsioHR || isDev) ? `
+                    <div class="card">
+                        <input type="text" id="resTitle" placeholder="File Name...">
+                        <input type="text" id="resLink" placeholder="Link (URL)..." style="margin-top:10px;">
+                        <button class="btn btn-asio" style="margin-top:10px; width:100%" onclick="uploadResource('${role}')">UPLOAD TO DB</button>
+                    </div>` : ''}`;
+                setupLiveResources(role);
             }
         };
 
-        function setupChatLogic(role) {
-            const chatIn = document.getElementById('chatIn');
-            const sendBtn = document.getElementById('sendBtn');
-            const chatBox = document.getElementById('chatBox');
-            const typingLabel = document.getElementById('typing-indicator');
+        function setupLiveFeed(path, role, isHR) {
+            const input = document.getElementById('inputField');
+            const btn = document.getElementById('actionBtn');
+            const box = document.getElementById('feedBox');
 
-            // 1. Live Sync Messages
-            const q = query(collection(db, `chats/${role}/messages`), orderBy("timestamp", "asc"));
-            currentChatSub = onSnapshot(q, (snapshot) => {
-                chatBox.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
+            const q = query(collection(db, path), orderBy("timestamp", "asc"));
+            activeSub = onSnapshot(q, (snap) => {
+                box.innerHTML = '';
+                snap.forEach(d => {
+                    const data = d.data();
                     const isDevMsg = data.sender.endsWith('@developer.auchat');
-                    chatBox.innerHTML += `
-                        <div class="msg" style="border-left-color: ${isDevMsg ? 'var(--accent-dev)' : 'var(--accent-blue)'}">
+                    box.innerHTML += `
+                        <div class="msg ${isHR ? 'msg-hr' : ''}">
                             <span class="msg-author ${isDevMsg ? 'dev-text' : ''}">${isDevMsg ? '👑 ' : ''}${data.sender.split('@')[0]}</span>
-                            <span class="${isDevMsg ? 'dev-text' : ''}">${data.text}</span>
+                            <span>${data.text}</span>
                         </div>`;
                 });
-                chatBox.scrollTop = chatBox.scrollHeight;
+                box.scrollTop = box.scrollHeight;
             });
 
-            // 2. Typing Indicator Listener
-            currentTypingSub = onSnapshot(collection(db, `chats/${role}/typing`), (snapshot) => {
-                let typers = [];
-                snapshot.forEach(doc => { if(doc.id !== email) typers.push(doc.id.split('@')[0]); });
-                typingLabel.innerText = typers.length > 0 ? typers.join(', ') + " is typing..." : "";
-            });
-
-            // 3. Send Function
-            const sendMessage = async () => {
-                const val = chatIn.value.trim();
-                if(!val) return;
-                chatIn.value = '';
-                await deleteDoc(doc(db, `chats/${role}/typing`, email));
-                await addDoc(collection(db, `chats/${role}/messages`), {
-                    sender: email,
-                    text: val,
-                    timestamp: serverTimestamp()
-                });
+            const send = async () => {
+                if(!input.value.trim()) return;
+                const txt = input.value; input.value = '';
+                await addDoc(collection(db, path), { sender: email, text: txt, timestamp: serverTimestamp() });
+                
+                if(isHR) {
+                    await addDoc(collection(db, `global_announcements`), { role: role, text: txt, timestamp: serverTimestamp() });
+                }
             };
 
-            // 4. Input Events (Keybind & Typing)
-            chatIn.addEventListener('keydown', (e) => {
-                if(e.key === 'Enter') sendMessage();
-                handleTyping(role);
-            });
-            sendBtn.onclick = sendMessage;
+            input.onkeydown = (e) => { if(e.key === 'Enter') send(); };
+            btn.onclick = send;
         }
 
-        async function handleTyping(role) {
-            await setDoc(doc(db, `chats/${role}/typing`, email), { typing: true });
-            if(typingTimeout) clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(async () => {
-                await deleteDoc(doc(db, `chats/${role}/typing`, email));
-            }, 3000);
+        function setupLiveResources(role) {
+            const list = document.getElementById('resourceList');
+            activeSub = onSnapshot(query(collection(db, `resources/${role}/files`), orderBy("timestamp", "desc")), (snap) => {
+                list.innerHTML = '';
+                snap.forEach(d => {
+                    const data = d.data();
+                    list.innerHTML += `
+                        <div class="res-card">
+                            <span><b>${data.title}</b></span>
+                            <button class="btn btn-outline" onclick="window.open('${data.link}')">OPEN</button>
+                        </div>`;
+                });
+            });
+        }
+
+        window.uploadResource = async (role) => {
+            const title = document.getElementById('resTitle').value;
+            const link = document.getElementById('resLink').value;
+            if(!title || !link) return;
+            await addDoc(collection(db, `resources/${role}/files`), {
+                title: title, link: link, timestamp: serverTimestamp()
+            });
+            document.getElementById('resTitle').value = '';
+            document.getElementById('resLink').value = '';
+        };
+
+        function showBanner(role, text) {
+            const banner = document.getElementById('hr-banner');
+            document.getElementById('banner-role').innerText = role + " HR";
+            document.getElementById('banner-text').innerText = text;
+            banner.classList.add('active');
+            setTimeout(() => banner.classList.remove('active'), 7000);
         }
     </script>
 </body>
