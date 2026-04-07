@@ -106,7 +106,6 @@
             tabs.forEach(t => nav.innerHTML += `<div class="sidebar-item" onclick="loadTab('${t}', '${role}')">${t}</div>`);
             loadTab('Chat', role);
 
-            // Global Priority Alert Listener
             onSnapshot(query(collection(db, `global_announcements`), orderBy("timestamp", "desc"), limit(1)), (snap) => {
                 snap.forEach(d => {
                     const data = d.data();
@@ -135,16 +134,7 @@
                 setupLiveFeed(isHR ? `announcements/${role}/posts` : `chats/${role}/messages`, role, isHR);
             } 
             else if(name === 'Settings') {
-                body.innerHTML = `
-                    <h3>System Preferences</h3>
-                    <div class="faq-item" style="margin-bottom:10px;">
-                        <h4>My View</h4>
-                        <p>Customize your dashboard layout and theme colors.</p>
-                        <button class="btn btn-outline" onclick="alert('UI Customization Coming Soon')">Design Settings</button>
-                    </div>`;
-            }
-            else {
-                body.innerHTML = `<p>Module ${name} is active.</p>`;
+                body.innerHTML = `<h3>System Preferences</h3><p>Customization options are coming soon.</p>`;
             }
         };
 
