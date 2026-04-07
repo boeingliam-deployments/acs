@@ -26,8 +26,8 @@
         </div>
     </nav>
 
-    <div id="prefScreen" style="text-align:center; padding: 80px 5%;">
-        <h1>Workspace Selection</h1>
+    <div id="prefScreen" style="text-align:center; padding: 50px 5%;">
+        <h1>Select Operational Environment</h1>
         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; max-width:900px; margin:40px auto;">
             <div class="card" onclick="selectRole('Department')" style="cursor:pointer"><h3>Department</h3></div>
             <div class="card" onclick="selectRole('Business')" style="cursor:pointer"><h3>Business</h3></div>
@@ -35,119 +35,143 @@
         </div>
     </div>
 
-    <div id="mainUI" style="display:none; padding: 30px 5%;">
-        <div style="display:grid; grid-template-columns: 300px 1fr; gap:25px;">
+    <div id="mainUI" style="display:none; padding: 20px 5%;">
+        <div style="display:grid; grid-template-columns: 280px 1fr; gap:20px;">
             <div class="card">
                 <h4 id="currentEnv">ENVIRONMENT</h4>
                 <div id="dynamicNav"></div>
             </div>
-
             <div class="card" id="moduleContent">
-                <h2 id="viewTitle">Initialize...</h2>
+                <h2 id="viewTitle">Select a module...</h2>
                 <div id="contentBody"></div>
             </div>
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-UvH3k2We00wAcsfCTVYJhgNvb7akjd0",
+            authDomain: "rp-portal-7cfdb.firebaseapp.com",
+            projectId: "rp-portal-7cfdb",
+            storageBucket: "rp-portal-7cfdb.firebasestorage.app",
+            messagingSenderId: "1029232195682",
+            appId: "1:1029232195682:web:852e8915f3f5293069793b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
         const email = localStorage.getItem('userEmail') || "";
         const isDev = email.endsWith('@developer.auchat');
         const isExec = email.endsWith('@executive.auchat');
         const isAsioHR = email.endsWith('@asio.hr.auchat');
 
-        const navData = {
-            'Department': ['Chat', 'HR Announcements', 'Roles', 'Resources'],
-            'Business': ['Commissions', 'Chat', 'Improvements', 'Announcements', 'Assets'],
-            'Server': ['Announcements', 'Chat', 'Moderation & Log', 'RP Stuff']
-        };
+        let currentChatSub = null;
+        let currentTypingSub = null;
+        let typingTimeout = null;
 
-        function checkAuth() {
+        window.checkAuth = () => {
             if(!email) window.location.href = 'index.html';
             const badge = document.getElementById('userBadge');
-            if(isDev) badge.innerHTML = `<span style="color:var(--accent-dev); font-weight:900;">👑 DEVELOPER</span>`;
+            if(isDev) badge.innerHTML = `<span style="color:var(--accent-dev); font-weight:900;">👑 DEV</span>`;
             else if(isExec) badge.innerHTML = `<span style="color:#ffd700;">EXEC</span>`;
             else if(isAsioHR) badge.innerHTML = `<span style="color:var(--accent-asio);">ASIO HR</span>`;
-            
-            // Devs/Execs can switch easily
             if(isDev || isExec) document.getElementById('switchZone').style.display = 'flex';
-        }
+        };
 
-        function selectRole(role) {
+        window.selectRole = (role) => {
             document.getElementById('prefScreen').style.display = 'none';
             document.getElementById('mainUI').style.display = 'block';
             document.getElementById('currentEnv').innerText = role.toUpperCase();
-            
             const nav = document.getElementById('dynamicNav');
             nav.innerHTML = '';
-            navData[role].forEach(n => {
-                nav.innerHTML += `<div class="sidebar-item" onclick="loadTab('${n}', '${role}')">${n}</div>`;
-            });
+            const tabs = ['Chat', 'Announcements', 'Roles', 'Resources'];
+            tabs.forEach(t => nav.innerHTML += `<div class="sidebar-item" onclick="loadTab('${t}', '${role}')">${t}</div>`);
             loadTab('Chat', role);
-        }
+        };
 
-        function loadTab(name, role) {
+        window.loadTab = (name, role) => {
+            if(currentChatSub) currentChatSub();
+            if(currentTypingSub) currentTypingSub();
+
             const body = document.getElementById('contentBody');
             document.getElementById('viewTitle').innerText = name;
 
             if(name === 'Chat') {
                 body.innerHTML = `
                     <div class="chat-container">
-                        <div class="chat-messages" id="chatBox">
-                            <div class="msg"><span class="msg-author">[SYSTEM]</span> Welcome to ${role} encrypted communications.</div>
-                        </div>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" id="chatIn" placeholder="Send message...">
-                            <button class="btn btn-blue" onclick="sendChat()">SEND</button>
+                        <div class="chat-messages" id="chatBox"></div>
+                        <div id="typing-indicator"></div>
+                        <div style="display:flex; gap:10px; margin-top:5px;">
+                            <input type="text" id="chatIn" placeholder="Type a message..." autocomplete="off">
+                            <button class="btn btn-blue" id="sendBtn">SEND</button>
                         </div>
                     </div>`;
-            } else if(name.includes('Announcements')) {
-                let controls = (isDev || isExec || isAsioHR) ? `
-                    <div style="margin-bottom:20px;">
-                        <input type="text" id="annText" placeholder="Broadcast message...">
-                        <button class="btn btn-red" style="margin-top:10px;" onclick="broadcast('${role}')">SEND URGENT BANNER</button>
-                    </div>` : '';
-                body.innerHTML = controls + `<div class="card">Recent Announcements will appear here.</div>`;
-            } else if(name === 'Roles' || name.includes('Moderation')) {
-                if(isDev || isExec || isAsioHR) {
-                    body.innerHTML = `
-                        <h4>Role Management</h4>
-                        <input type="text" placeholder="Role Name...">
-                        <button class="btn btn-blue" style="margin-top:10px;">CREATE ROLE</button>
-                        <button class="btn btn-outline" style="margin-top:10px;">ASSIGN PERMS</button>
-                    `;
-                } else {
-                    body.innerHTML = `<p>Access Denied. You do not have HR permissions for this department.</p>`;
-                }
+                
+                setupChatLogic(role);
             } else {
-                body.innerHTML = `<div class="card">Standard module resources for ${role} are being retrieved.</div>`;
+                body.innerHTML = `<p>Module ${name} initialized for ${role}.</p>`;
             }
+        };
+
+        function setupChatLogic(role) {
+            const chatIn = document.getElementById('chatIn');
+            const sendBtn = document.getElementById('sendBtn');
+            const chatBox = document.getElementById('chatBox');
+            const typingLabel = document.getElementById('typing-indicator');
+
+            // 1. Live Sync Messages
+            const q = query(collection(db, `chats/${role}/messages`), orderBy("timestamp", "asc"));
+            currentChatSub = onSnapshot(q, (snapshot) => {
+                chatBox.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const isDevMsg = data.sender.endsWith('@developer.auchat');
+                    chatBox.innerHTML += `
+                        <div class="msg" style="border-left-color: ${isDevMsg ? 'var(--accent-dev)' : 'var(--accent-blue)'}">
+                            <span class="msg-author ${isDevMsg ? 'dev-text' : ''}">${isDevMsg ? '👑 ' : ''}${data.sender.split('@')[0]}</span>
+                            <span class="${isDevMsg ? 'dev-text' : ''}">${data.text}</span>
+                        </div>`;
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+
+            // 2. Typing Indicator Listener
+            currentTypingSub = onSnapshot(collection(db, `chats/${role}/typing`), (snapshot) => {
+                let typers = [];
+                snapshot.forEach(doc => { if(doc.id !== email) typers.push(doc.id.split('@')[0]); });
+                typingLabel.innerText = typers.length > 0 ? typers.join(', ') + " is typing..." : "";
+            });
+
+            // 3. Send Function
+            const sendMessage = async () => {
+                const val = chatIn.value.trim();
+                if(!val) return;
+                chatIn.value = '';
+                await deleteDoc(doc(db, `chats/${role}/typing`, email));
+                await addDoc(collection(db, `chats/${role}/messages`), {
+                    sender: email,
+                    text: val,
+                    timestamp: serverTimestamp()
+                });
+            };
+
+            // 4. Input Events (Keybind & Typing)
+            chatIn.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter') sendMessage();
+                handleTyping(role);
+            });
+            sendBtn.onclick = sendMessage;
         }
 
-        function sendChat() {
-            const input = document.getElementById('chatIn');
-            const box = document.getElementById('chatBox');
-            if(!input.value) return;
-            
-            let authorClass = isDev ? 'dev-text' : '';
-            let icon = isDev ? '👑 ' : '';
-            
-            box.innerHTML += `
-                <div class="msg">
-                    <span class="msg-author ${authorClass}">${icon}${email.split('@')[0]}</span>
-                    <span class="${authorClass}">${input.value}</span>
-                </div>`;
-            input.value = '';
-            box.scrollTop = box.scrollHeight;
-        }
-
-        function broadcast(role) {
-            const msg = document.getElementById('annText').value;
-            const banner = document.getElementById('hr-banner');
-            document.getElementById('banner-role').innerText = role + " HR";
-            document.getElementById('banner-text').innerText = msg;
-            
-            banner.classList.add('active');
-            setTimeout(() => banner.classList.remove('active'), 5000);
+        async function handleTyping(role) {
+            await setDoc(doc(db, `chats/${role}/typing`, email), { typing: true });
+            if(typingTimeout) clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(async () => {
+                await deleteDoc(doc(db, `chats/${role}/typing`, email));
+            }, 3000);
         }
     </script>
 </body>
