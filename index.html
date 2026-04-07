@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACS | Operational Gateway</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -14,39 +15,43 @@
         <button class="btn btn-blue" onclick="document.getElementById('loginModal').style.display='flex'">AUTHORIZE ACCESS</button>
     </nav>
 
-    <div style="text-align: center; padding: 100px 20px;">
-        <h1 style="font-size: 4rem; margin: 0; letter-spacing: -2px; font-weight: 800;">Secure Comms.</h1>
-        <p style="color: var(--text-secondary); font-size: 1.2rem; max-width: 700px; margin: 25px auto; line-height: 1.6;">
+    <div style="text-align: center; padding: 80px 20px 40px 20px;">
+        <h1 style="font-size: 3.5rem; margin: 0; letter-spacing: -2px; font-weight: 800;">Auchat Communication System</h1>
+        <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 800px; margin: 25px auto; line-height: 1.6;">
             The Auchat Communication System was created by the executive director, <b>nswamboguy</b> and developed by <b>boeingliam</b>! 
             These 2 are the main planners of this project and work closely to commit the best to the ACS.
         </p>
     </div>
 
     <div class="info-section">
-        <h2 style="font-size: 2rem;">System Information</h2>
+        <p style="color: var(--text-secondary); font-style: italic;">Below this, you may find many information.</p>
         <div class="faq-grid">
             <div class="faq-item">
-                <h4>How do I get an account?</h4>
-                <p>To get an account you must contact us directly through official channels.</p>
+                <h4>How do i get an account?</h4>
+                <p>To get an account you must <b>Contact us</b>.</p>
             </div>
             <div class="faq-item">
-                <h4>How can I use the system without an account?</h4>
-                <p>You can't. Authorization is required for all modules.</p>
+                <h4>How can i use the system without an account?</h4>
+                <p>You cant. Access is restricted to authorized personnel only.</p>
             </div>
             <div class="faq-item">
-                <h4>How can I change my system to my preferences?</h4>
-                <p>Once logged in, go to Settings > My View > Design, then click on what you want!</p>
+                <h4>How can i change my system to my preferences?</h4>
+                <p>Go to settings, my view, design, then click on what you want!</p>
             </div>
         </div>
     </div>
 
-    <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(10px);">
-        <div class="card" style="width: 350px; text-align: center; border: 1px solid var(--accent-blue);">
-            <h3>Personnel Login</h3>
-            <input type="email" id="user" placeholder="Email Address" style="margin-bottom:10px;">
-            <input type="password" id="pass" placeholder="Password">
-            <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="handleLogin()">VERIFY</button>
-            <p onclick="document.getElementById('loginModal').style.display='none'" style="cursor:pointer; font-size:0.8rem; margin-top:15px; color:var(--text-secondary);">Cancel</p>
+    <div id="loginModal">
+        <div class="card" style="width: 350px; text-align: center;">
+            <h3 style="margin-top: 0;">Personnel Login</h3>
+            <div style="text-align: left;">
+                <label style="font-size: 0.8rem; color: var(--text-secondary);">Email</label>
+                <input type="email" id="user" placeholder="Enter email..." style="margin-bottom:15px; margin-top: 5px;">
+                <label style="font-size: 0.8rem; color: var(--text-secondary);">Password</label>
+                <input type="password" id="pass" placeholder="Enter password..." style="margin-top: 5px;">
+            </div>
+            <button class="btn btn-blue" style="width:100%; margin-top:25px;" onclick="handleLogin()">VERIFY IDENTITY</button>
+            <p onclick="document.getElementById('loginModal').style.display='none'" style="cursor:pointer; font-size:0.8rem; margin-top:15px; color:var(--text-secondary);">Close Gateway</p>
         </div>
     </div>
 
@@ -62,39 +67,26 @@
             messagingSenderId: "1029232195682",
             appId: "1:1029232195682:web:852e8915f3f5293069793b"
         };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
         window.handleLogin = async () => {
             const email = document.getElementById('user').value;
             const pass = document.getElementById('pass').value;
-            try {
-                const res = await signInWithEmailAndPassword(auth, email, pass);
-                localStorage.setItem('userEmail', res.user.email);
-                window.location.href = 'dashboard.html';
-            } catch (e) { alert("Invalid Credentials"); }
-        };
-    </script>
-</body>
-</html>        const firebaseConfig = {
-            apiKey: "AIzaSyD-UvH3k2We00wAcsfCTVYJhgNvb7akjd0",
-            authDomain: "rp-portal-7cfdb.firebaseapp.com",
-            projectId: "rp-portal-7cfdb",
-            storageBucket: "rp-portal-7cfdb.firebasestorage.app",
-            messagingSenderId: "1029232195682",
-            appId: "1:1029232195682:web:852e8915f3f5293069793b"
-        };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+            
+            if (!email || !pass) {
+                alert("Please fill in all fields.");
+                return;
+            }
 
-        window.handleLogin = async () => {
-            const email = document.getElementById('user').value;
-            const pass = document.getElementById('pass').value;
             try {
                 const res = await signInWithEmailAndPassword(auth, email, pass);
                 localStorage.setItem('userEmail', res.user.email);
                 window.location.href = 'dashboard.html';
-            } catch (e) { alert("Invalid Credentials"); }
+            } catch (e) {
+                alert("Invalid Credentials: Access Denied.");
+            }
         };
     </script>
 </body>
